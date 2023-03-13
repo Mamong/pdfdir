@@ -1,6 +1,7 @@
 # pdfdir —— PDF导航书签添加工具
 
 ## 本仓库更新
+更新时间2023.3.13
 1. 使用pikepdf替换pypdf2，解决algorithm code 4问题
 PyPDF2.errors.PdfReadError: File has not been decrypted
 NotImplementedError: only algorithm code 1 and 2 are supported. This PDF uses code 4
@@ -124,10 +125,15 @@ https://www.python.org/downloads/
 `pip install pyinstaller`
 
 打包程序
+windows:
+`pyinstaller.py -F --copy-metadata pikepdf run_gui.py -n "PDFdir.exe"  -w`
 
-`pyinstaller.py -F run_gui.py -n "PDFdir.exe"  --noconsole`
+mac:
+`pyinstaller -n 'PDFdir' --copy-metadata pikepdf run_gui.py  -w`
 
-
+参考：
+[importlib_metadata.PackageNotFoundError: No package metadata was found for pikepdf](https://www.cnblogs.com/oscar2960/p/16420752.html)
+[Using PyInstaller](https://pyinstaller.org/en/stable/usage.html)
 ### 目录文本格式
 
 目前通过以下格式处理目录文本：
