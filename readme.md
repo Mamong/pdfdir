@@ -1,5 +1,11 @@
 # pdfdir —— PDF导航书签添加工具
 
+## 本仓库更新
+1. 使用pikepdf替换pypdf2，解决algorithm code 4问题
+PyPDF2.errors.PdfReadError: File has not been decrypted
+NotImplementedError: only algorithm code 1 and 2 are supported. This PDF uses code 4
+2. 将目录刷新延迟到正则输入结束之后
+
 [![Build Status](https://travis-ci.org/chroming/pdfdir.svg?branch=master)](https://travis-ci.org/chroming/pdfdir)
 
 根据已有的目录文本为你的PDF自动生成导航书签。
@@ -76,7 +82,7 @@ Windows/macOS/Ubuntu:
 
 + Python2/3 均可，推荐Python3
 + PyQt5
-+ PyPDF2
++ <s>PyPDF2</s> pikepdf
 + six
 
 *注意：Python2与Python3 不兼容，某些系统（如macOS）系统自带Python2，使用`python`命令调用，若自行安装Python3则可能需要通过`python3`来调用Python3，pip同理。本文不区分python/python3, pip/pip3，请用户按当前系统所安装版本使用对应命令。*

@@ -11,7 +11,7 @@ public:
 
 import os
 
-from PyPDF2 import PdfFileWriter, PdfFileReader, utils
+from pikepdf import Pdf as PDF, OutlineItem, PageLocation
 
 
 class Pdf(object):
@@ -39,11 +39,7 @@ class Pdf(object):
     """
     def __init__(self, path):
         self.path = path
-        reader = PdfFileReader(open(path, "rb"), strict=False)
-        self.writer = PdfFileWriter()
-        self.writer.appendPagesFromReader(reader)
-        self.writer.addMetadata({k: v for k, v in reader.getDocumentInfo().items()
-                                 if isinstance(v, (utils.string_type, utils.bytes_type))})
+        self.pdf = PDF.open(path,allow_overwriting_input=True)
 
     @property
     def _new_path(self):
@@ -62,12 +58,30 @@ class Pdf(object):
         parent: IndirectObject(the addBookmark() return object), the parent of this bookmark, the default is None.
 
         """
-        return self.writer.addBookmark(title, pagenum, parent=parent)
+        bookmark = OutlineItem(title, pagenum, PageLocation.Fit)
+        if parent: parent.children.append(bookmark)
+        else: self.outline.root.append(bookmark)
+        return bookmark
 
     def save_pdf(self):
         """save the writer to a pdf file with name 'name_new.pdf' """
         if os.path.exists(self._new_path):
             os.remove(self._new_path)
         with open(self._new_path, 'wb') as out:
-            self.writer.write(out)
+            self.pdf.save(out)
         return self._new_path
+
+    def add_bookmarks(self, index_dict):
+        if not index_dict:
+            return None
+        m = max(index_dict.keys())
+        parent_dict = {}  # {parent index:IndirectObject}
+        max_page_num = len(self.pdf.pages) - 1
+        with self.pdf.open_outline() as self.outline:
+            self.outline.root.clear()
+            for i in range(m+1):
+                value = index_dict[i]
+                inobject = self.add_bookmark(value.get('title', ''),
+                                            min(value.get('real_num', 1) - 1, max_page_num),
+                                            parent_dict.get(value.get('parent')))
+                parent_dict[i] = inobject

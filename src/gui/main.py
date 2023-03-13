@@ -80,9 +80,9 @@ class Main(QtWidgets.QMainWindow, Ui_PDFdir, ControlButtonMixin):
                     self.level0_box.stateChanged,
                     self.level1_box.stateChanged,
                     self.level2_box.stateChanged,
-                    self.level0_edit.textChanged,
-                    self.level1_edit.textChanged,
-                    self.level2_edit.textChanged,
+                    self.level0_edit.editingFinished,
+                    self.level1_edit.editingFinished,
+                    self.level2_edit.editingFinished,
                     self.unknown_level_box.currentIndexChanged
                     ):
             act.connect(self.make_dir_tree)
