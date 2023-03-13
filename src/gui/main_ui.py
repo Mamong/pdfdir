@@ -9,6 +9,7 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from src.gui.new_qline_edit import NewQLineEdit
 
 
 class Ui_PDFdir(object):
@@ -25,7 +26,7 @@ class Ui_PDFdir(object):
         PDFdir.setAcceptDrops(True)
         self.main_widget = QtWidgets.QWidget(PDFdir)
         self.main_widget.setObjectName("main_widget")
-        self.pdf_path_edit = QtWidgets.QLineEdit(self.main_widget)
+        self.pdf_path_edit = NewQLineEdit(self.main_widget)
         self.pdf_path_edit.setGeometry(QtCore.QRect(9, 30, 157, 20))
         self.pdf_path_edit.setObjectName("pdf_path_edit")
         self.open_button = QtWidgets.QPushButton(self.main_widget)

@@ -258,6 +258,12 @@ class Main(QtWidgets.QMainWindow, Ui_PDFdir, ControlButtonMixin):
             item.setExpanded(1)
 
     def write_tree_to_pdf(self):
+        if not self.pdf_path:
+            self.alert_msg(u"Select a PDF file！", level="warn")
+            return
+        if not self.pdf_path.endswith("pdf"):
+            self.alert_msg(u"Not a PDF file！", level="warn")
+            return
         try:
             new_path = self.dict_to_pdf(self.pdf_path, self.tree_to_dict())
             self.alert_msg(u"%s Finished！" % new_path)
