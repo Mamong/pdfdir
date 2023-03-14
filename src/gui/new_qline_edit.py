@@ -19,4 +19,4 @@ class NewQLineEdit(QtWidgets.QLineEdit):
     def dropEvent(self, event):    # 本方法为父类方法，本方法中的event为鼠标放事件对象
         urls = [u for u in event.mimeData().urls()]  # 范围文件路径的Qt内部类型对象列表，由于支持多个文件同时拖入所以使用列表存放
         for url in urls:
-            self.setText(url.path()[1:])   # 将Qt内部类型转换为字符串类型
+            self.setText(str(url.toLocalFile()))   # 将Qt内部类型转换为字符串类型
