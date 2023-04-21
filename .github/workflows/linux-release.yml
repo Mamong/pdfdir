@@ -20,7 +20,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
-        python-version: '3.10'
+        python-version: '3.7'
 
     - name: Install dependencies
       # install libxcb-xinerama0 to fix "Could not load the Qt platform plugin 'xcb'"
