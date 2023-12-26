@@ -14,7 +14,6 @@ from PyQt5.QtWidgets import QMessageBox
 
 
 from src.gui.main_ui import Ui_PDFdir
-from src.pdfdirectory import add_directory
 from src.isupdated import is_updated
 from src.config import RE_DICT, CONFIG
 from src.gui.base import TreeWidget
@@ -28,22 +27,6 @@ QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
 def dynamic_base_class(instance, cls_name, new_class, **kwargs):
     instance.__class__ = type(cls_name, (new_class, instance.__class__), kwargs)
     return instance
-
-
-class WindowDragMixin(object):
-    def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            self.m_drag = True
-            self.m_DragPosition = event.globalPos() - self.pos()
-            event.accept()
-
-    def mouseMoveEvent(self, QMouseEvent):
-        if QMouseEvent.buttons() and Qt.LeftButton:
-            self.move(QMouseEvent.globalPos() - self.m_DragPosition)
-            QMouseEvent.accept()
-
-    def mouseReleaseEvent(self, QMouseEvent):
-        self.m_drag = False
 
 
 class ControlButtonMixin(object):
@@ -65,25 +48,36 @@ class Main(QtWidgets.QMainWindow, Ui_PDFdir, ControlButtonMixin):
         self.setWindowIcon(QtGui.QIcon('{icon}'.format(icon=CONFIG.WINDOW_ICON)))
         self.dir_tree_widget = dynamic_base_class(self.dir_tree_widget, 'TreeWidget', TreeWidget)
         self.dir_tree_widget.init_connect(parents=[self, self.dir_tree_widget])
-        # self.add_pagenum_box.setMinimum(-1000)
+        self.dir_tree_widget.fix_column()
         self._set_connect()
         self._set_action()
-        # self._set_unwritable()
-
-        # self.adv_group.setEnabled(False)
+        self._set_unwritable()
 
     def _set_connect(self):
         self.open_button.clicked.connect(self.open_file_dialog)
         self.export_button.clicked.connect(self.write_tree_to_pdf)
+        self.level0_box.clicked.connect(self._change_level0_writable)
+        self.level1_box.clicked.connect(self._change_level1_writable)
+        self.level2_box.clicked.connect(self._change_level2_writable)
+        self.level3_box.clicked.connect(self._change_level3_writable)
+        self.level4_box.clicked.connect(self._change_level4_writable)
+        self.level5_box.clicked.connect(self._change_level5_writable)
         for act in (self.dir_text_edit.textChanged,
                     self.offset_edit.textChanged,
                     self.level0_box.stateChanged,
                     self.level1_box.stateChanged,
                     self.level2_box.stateChanged,
+                    self.level3_box.stateChanged,
+                    self.level4_box.stateChanged,
+                    self.level5_box.stateChanged,
                     self.level0_edit.editingFinished,
                     self.level1_edit.editingFinished,
                     self.level2_edit.editingFinished,
-                    self.unknown_level_box.currentIndexChanged
+                    self.level3_edit.editingFinished,
+                    self.level4_edit.editingFinished,
+                    self.level5_edit.editingFinished,
+                    self.unknown_level_box.currentIndexChanged,
+                    self.space_level_box.stateChanged
                     ):
             act.connect(self.make_dir_tree)
 
@@ -98,17 +92,9 @@ class Main(QtWidgets.QMainWindow, Ui_PDFdir, ControlButtonMixin):
         self.level0_edit.setEnabled(False)
         self.level1_edit.setEnabled(False)
         self.level2_edit.setEnabled(False)
-
-    def _level_button_clicked(self, level_str):
-        context_menu = QtWidgets.QMenu()
-        for k, v in RE_DICT.get(level_str).items():
-            context_menu.addAction(k, lambda v=v: self._insert_to_editor(level_str, v))
-        context_menu.exec_(QtGui.QCursor.pos())
-
-    def _insert_to_editor(self, level_str, text):
-        editor = getattr(self, level_str + '_edit')
-        if editor.isEnabled():
-            editor.insert(text)
+        self.level3_edit.setEnabled(False)
+        self.level4_edit.setEnabled(False)
+        self.level5_edit.setEnabled(False)
 
     def _change_level0_writable(self):
         self.level0_edit.setEnabled(True if self.level0_box.isChecked() else False)
@@ -119,19 +105,14 @@ class Main(QtWidgets.QMainWindow, Ui_PDFdir, ControlButtonMixin):
     def _change_level2_writable(self):
         self.level2_edit.setEnabled(True if self.level2_box.isChecked() else False)
 
-    def _add_pagenum_to_item(self, item):
-        current_num = int(item.text(1))
-        add_num = self.add_pagenum_box.value()
-        self.dir_tree_widget.set_pagenum(item, max(current_num + add_num, 0), )
+    def _change_level3_writable(self):
+        self.level3_edit.setEnabled(True if self.level3_box.isChecked() else False)
 
-    def _add_selected_pagenum(self):
-        selected_items = self.dir_tree_widget.selectedItems()
-        for item in selected_items:
-            self._add_pagenum_to_item(item)
+    def _change_level4_writable(self):
+        self.level4_edit.setEnabled(True if self.level4_box.isChecked() else False)
 
-    def _add_all_pagenum(self):
-        for item in self.dir_tree_widget.all_items:
-            self._add_pagenum_to_item(item)
+    def _change_level5_writable(self):
+        self.level5_edit.setEnabled(True if self.level5_box.isChecked() else False)
 
     @staticmethod
     def _open_home_page():
@@ -207,8 +188,24 @@ class Main(QtWidgets.QMainWindow, Ui_PDFdir, ControlButtonMixin):
         return self.level2_edit.text() if self.level2_box.isChecked() else None
 
     @property
+    def level3_text(self):
+        return self.level3_edit.text() if self.level3_box.isChecked() else None
+
+    @property
+    def level4_text(self):
+        return self.level4_edit.text() if self.level4_box.isChecked() else None
+
+    @property
+    def level5_text(self):
+        return self.level5_edit.text() if self.level5_box.isChecked() else None
+
+    @property
     def other_level_index(self):
         return self.unknown_level_box.currentIndex()
+
+    @property
+    def level_by_space(self):
+        return self.space_level_box.isChecked()
 
     def open_file_dialog(self):
         filename, _ = QtWidgets.QFileDialog.getOpenFileName(self, u'select PDF', filter="PDF (*.pdf)")
@@ -224,7 +221,11 @@ class Main(QtWidgets.QMainWindow, Ui_PDFdir, ControlButtonMixin):
                                       self.level0_text,
                                       self.level1_text,
                                       self.level2_text,
-                                      self.other_level_index)
+                                      self.level3_text,
+                                      self.level4_text,
+                                      self.level5_text,
+                                      other=self.other_level_index,
+                                      level_by_space=self.level_by_space)
         top_idx = 0
         inserted_items = {}
         children = {}
